@@ -186,8 +186,11 @@ flatten({ upload: file }, [File]) // { upload: file } — excluded types kept wh
 
 ## Requirements
 
-`fetch`, `Response`, `Headers`, `FormData`, `Blob` and `URLSearchParams` as globals — Node 20+, Bun, Deno,
-or any current browser. No polyfills, no dependencies, ESM and CJS both shipped.
+`fetch`, `Response`, `Headers`, `FormData`, `File`, `Blob` and `URLSearchParams` as globals — Node 22+, Bun,
+Deno, or any current browser. No polyfills, no dependencies, ESM and CJS both shipped.
+
+Nothing is imported from `node:*`, so the package is not Node-specific; the floor is only where those
+globals became available unflagged. Node 20 would work too, but it is past end-of-life.
 
 ## Development
 

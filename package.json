@@ -43,7 +43,7 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "scripts": {
     "build": "tsdown",
