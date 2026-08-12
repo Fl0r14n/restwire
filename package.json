@@ -6,10 +6,10 @@
   "author": "Florian Chi\u0219",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Fl0r14n/restwire.git"
+    "url": "git+https://github.com/Fl0r14n/fetchbraid.git"
   },
-  "homepage": "https://github.com/Fl0r14n/restwire#readme",
-  "bugs": "https://github.com/Fl0r14n/restwire/issues",
+  "homepage": "https://github.com/Fl0r14n/fetchbraid#readme",
+  "bugs": "https://github.com/Fl0r14n/fetchbraid/issues",
   "keywords": [
     "fetch",
     "rest",
