@@ -94,10 +94,10 @@ const parseBody = async (response: Response, responseType?: string) => {
  * @example
  * ```ts
  * try {
- *   await client.postAt(`${cartId}/vouchers`, voucher)
+ *   await orders.post(order)
  * } catch (e) {
  *   if (!(e instanceof RestError)) throw e
- *   if (e.status === 409) return
+ *   if (e.status === 409) return // already exists
  *   message = e.body?.errors?.map((x: any) => x.message).join(', ') ?? ''
  * }
  * ```
@@ -169,7 +169,7 @@ export interface RestClient {
   get: <T>(id: number | string, options?: RequestOptions) => Promise<T>
   /** `POST` to the endpoint itself — create. @throws {RestError} */
   post: <T>(body: any, options?: RequestOptions) => Promise<T>
-  /** `POST` to `endpoint/{id}` — an action on a member (`addVoucher`, `cancellation`). @throws {RestError} */
+  /** `POST` to `endpoint/{id}` — an action on a member (`123/publish`, `123/cancel`). @throws {RestError} */
   postAt: <T>(id: number | string, body: any, options?: RequestOptions) => Promise<T>
   /** `PUT` `endpoint/{id}` — full replace. @throws {RestError} */
   put: <T>(id: number | string, body: any, options?: RequestOptions) => Promise<T>
@@ -206,13 +206,13 @@ export interface RestClient {
  * Interceptors, auth and retries are not this client's job — they belong to the `doFetch` it is handed.
  *
  * @param endpoint the absolute base url, or a thunk resolving it — read config/route state lazily in
- *   the thunk, so a client built once still follows the site, locale and user path as they change
+ *   the thunk, so a client built once still follows the locale, tenant and user path as they change
  * @param doFetch `fetch`-compatible transport — a {@link FetchClient}'s `fetch`, plain `fetch`, or a mock
  *
  * @example A resource built once, following the context
  * ```ts
- * const client = rest(() => `${sitePath}/users/${userId}/carts`, api.fetch)
- * await client.get('300938', { params: { fields: 'FULL' } })
+ * const orders = rest(() => `${baseUrl}/${locale}/users/${userId}/orders`, api.fetch)
+ * await orders.get('300938', { params: { page: 2 } })
  * ```
  */
 export const rest = (endpoint: string | (() => string), doFetch: typeof fetch = fetch): RestClient => {

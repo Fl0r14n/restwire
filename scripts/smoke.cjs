@@ -17,7 +17,7 @@ const main = async () => {
   assert.equal(body.url, 'https://example.test/products/123?fields=FULL')
   assert.equal(body.sent, 'yes')
 
-  const failing = rest('https://example.test/carts', async () => new Response('nope', { status: 409 }))
+  const failing = rest('https://example.test/orders', async () => new Response('nope', { status: 409 }))
   const error = await failing.get('c1').catch(e => e)
   assert.ok(error instanceof RestError, 'expected a RestError instance')
   assert.equal(error.status, 409)
