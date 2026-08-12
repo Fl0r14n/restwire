@@ -17,19 +17,31 @@ jobs:
       - run: bunx biome ci .
       - run: bun run type-check
       - run: bun run test
+      - run: bun run build
+      # built once, then smoke-tested on every supported node below — tsdown itself needs
+      # node >= 22.18, so rebuilding per node version would test the toolchain, not the package
+      - uses: actions/upload-artifact@v5
+        with:
+          name: dist
+          path: dist
+          retention-days: 1
 
-  # the package ships to npm, so it has to hold up on plain node too, not only bun
-  node:
+  # does the published bundle actually work on a plain node, without bun or a bundler in the way
+  smoke:
+    needs: check
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         node: [22, 24]
     steps:
       - uses: actions/checkout@v6
-      - uses: oven-sh/setup-bun@v2
       - uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
-      - run: bun install --frozen-lockfile
-      - run: bun run build
-      - run: npx vitest run
+      - uses: actions/download-artifact@v6
+        with:
+          name: dist
+          path: dist
+      - run: node scripts/smoke.mjs
+      - run: node scripts/smoke.cjs
