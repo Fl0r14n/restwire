@@ -1,9 +1,9 @@
 {
-  "name": "restwire",
+  "name": "fetchbraid",
   "version": "0.1.0",
   "description": "Fetch interceptor chain + tiny REST client. Zero deps, framework-agnostic, SSR-safe.",
   "license": "MIT",
-  "author": "Florian Chiș",
+  "author": "Florian Chi\u0219",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Fl0r14n/restwire.git"

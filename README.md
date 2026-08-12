@@ -1,22 +1,70 @@
-# restwire
+# fetchbraid
 
 A `fetch` interceptor chain and a small REST client, in ~250 lines with no dependencies.
 
-- **`createFetch`** wraps a transport in a middleware chain — add headers, retry, count in-flight requests.
+- **`createFetch`** braids middleware around a transport — add headers, retry, count in-flight requests.
 - **`rest`** binds one endpoint to a set of verbs, serialises the body, parses the response, throws on non-2xx.
 
 No framework, no globals, no `window`. Runs unchanged in the browser, under SSR, and in a worker.
 
 ```sh
-npm i restwire   # bun add restwire
+npm i fetchbraid   # bun add fetchbraid
 ```
+
+## createFetch
+
+Every interceptor is a strand wrapped around the transport:
+
+```ts
+import { createFetch } from 'fetchbraid'
+
+const api = createFetch() // or createFetch(someOtherFetch)
+api.use(next => (input, init) => next(input, api.withHeader(init, 'authorization', token)))
+
+await api.fetch('/api/products/123')
+```
+
+First registered ends up **outermost**, so registration order is reading order. `api.fetch` is a stable
+reference — the chain is composed per call, so a consumer can capture it before any interceptor exists and
+still see them all. That's what makes a module-scope resource safe while auth wires itself up later.
+
+An interceptor is just `next => (input, init) => Response`, so skipping `next` short-circuits and calling it
+twice retries:
+
+```ts
+api.use(next => async (input, init) => {
+  const response = await next(input, init)
+  return (response.status === 401 && (await refresh()) && next(input, init)) || response
+})
+```
+
+Two helpers hang off the client so an interceptor needs no second import:
+
+- **`api.withHeader(init, name, value)`** returns a **copy** with one more header. Never mutate the `init`
+  you were handed — it belongs to the caller and is reused across a retry.
+- **`api.toUrl(input)`** gets the url whichever of the three forms it arrived in. A `Request` stringifies to
+  `'[object Request]'`, so you cannot template it.
+
+### As a DI token
+
+`FetchClient` is an abstract class, not an interface, so it can double as a dependency-injection key.
+Subclass it with an empty body when an app needs two independent clients:
+
+```ts
+export abstract class ApiFetch extends FetchClient {}
+export abstract class PaymentsFetch extends FetchClient {}
+```
+
+Not using DI? Ignore it — `createFetch()` returns a plain object.
 
 ## rest
 
-```ts
-import { rest } from 'restwire'
+Hand it the braided transport, or nothing at all and it uses global `fetch`:
 
-const products = rest('https://api.example.com/products')
+```ts
+import { rest } from 'fetchbraid'
+
+const products = rest('https://api.example.com/products', api.fetch)
 
 await products.query({ params: { page: 2, sort: 'name' } }) // GET /products?page=2&sort=name
 await products.get('123') // GET /products/123
@@ -76,7 +124,7 @@ await feed.get('a1', { responseType: 'document' }) // the raw text, NOT a DOM
 A non-2xx rejects with a `RestError` — a real `Error`, and the only way to tell the failure cases apart:
 
 ```ts
-import { RestError } from 'restwire'
+import { RestError } from 'fetchbraid'
 
 try {
   await orders.post(order)
@@ -89,50 +137,6 @@ try {
 
 `e.body` is parsed json, or raw text, or `undefined` when empty. `e.url` is the url *this client built*,
 query string included — not `response.url`, which a redirect would have rewritten.
-
-## createFetch
-
-```ts
-import { createFetch, rest } from 'restwire'
-
-const api = createFetch() // or createFetch(someOtherFetch)
-api.use(next => (input, init) => next(input, api.withHeader(init, 'authorization', token)))
-
-const products = rest('/api/products', api.fetch)
-```
-
-First registered ends up **outermost**, so registration order is reading order. `api.fetch` is a stable
-reference — the chain is composed per call, so a consumer can capture it before any interceptor exists and
-still see them all.
-
-An interceptor is just `next => (input, init) => Response`, so skipping `next` short-circuits and calling it
-twice retries:
-
-```ts
-api.use(next => async (input, init) => {
-  const response = await next(input, init)
-  return (response.status === 401 && (await refresh()) && next(input, init)) || response
-})
-```
-
-Two helpers hang off the client so an interceptor needs no second import:
-
-- **`api.withHeader(init, name, value)`** returns a **copy** with one more header. Never mutate the `init`
-  you were handed — it belongs to the caller and is reused across a retry.
-- **`api.toUrl(input)`** gets the url whichever of the three forms it arrived in. A `Request` stringifies to
-  `'[object Request]'`, so you cannot template it.
-
-### As a DI token
-
-`FetchClient` is an abstract class, not an interface, so it can double as a dependency-injection key.
-Subclass it with an empty body when an app needs two independent clients:
-
-```ts
-export abstract class ApiFetch extends FetchClient {}
-export abstract class PaymentsFetch extends FetchClient {}
-```
-
-Not using DI? Ignore it — `createFetch()` returns a plain object.
 
 ## API
 
