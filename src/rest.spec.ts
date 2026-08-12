@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { RestError, rest } from './rest'
+import { RestError, rest, toFormData, toUrlForm } from './rest'
 
 const json = (data: any, status = 200) => new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json' } })
 
@@ -257,5 +257,12 @@ describe('form helpers', () => {
     expect(form.get('a')).toBe('1')
     expect(form.has('b')).toBe(false)
     expect(form.has('c')).toBe(false)
+  })
+
+  it('the client carries the same functions the module exports', () => {
+    // importable without building a client, and the two must not drift apart
+    const client = rest('/x', mockFetch())
+    expect(client.toUrlForm).toBe(toUrlForm)
+    expect(client.toFormData).toBe(toFormData)
   })
 })

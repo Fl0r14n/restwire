@@ -1,6 +1,6 @@
 {
   "name": "fetchbraid",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Fetch interceptor chain + tiny REST client. Zero deps, framework-agnostic, SSR-safe.",
   "license": "MIT",
   "author": "Florian Chi\u0219",

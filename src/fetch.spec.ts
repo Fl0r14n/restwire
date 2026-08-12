@@ -1,8 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createFetch, FetchClient } from './fetch'
-
-// module-private, like rest.ts's toUrlForm/toFormData — reachable only through a client
-const { toUrl, withHeader } = createFetch()
+import { createFetch, FetchClient, toUrl, withHeader } from './fetch'
 
 const ok = (body = 'ok') => new Response(body, { status: 200 })
 const base = () => vi.fn(async () => ok()) as unknown as typeof fetch
@@ -129,5 +126,13 @@ describe('helpers', () => {
   it('withHeader overwrites a header of the same name', () => {
     const next = withHeader({ headers: { authorization: 'old' } }, 'authorization', 'new')
     expect(new Headers(next.headers).get('authorization')).toBe('new')
+  })
+
+  it('the client carries the same functions the module exports', () => {
+    // a chain composed elsewhere (angular DI multi-providers, say) imports these directly rather than
+    // building a throwaway client to reach them — so the two must not drift apart
+    const client = createFetch()
+    expect(client.toUrl).toBe(toUrl)
+    expect(client.withHeader).toBe(withHeader)
   })
 })

@@ -125,7 +125,14 @@ const toError = async (response: Response, url: string) => {
   return new RestError(response.status, response.statusText, url, (text && tryJson(text)) || undefined)
 }
 
-const toUrlForm = (body: Record<string, any>): URLSearchParams => {
+/**
+ * Flat object → `URLSearchParams`, for endpoints that want a form post rather than json. Falsy values are
+ * dropped, so an absent optional field sends nothing rather than `''`.
+ *
+ * Also reachable as {@link RestClient.toUrlForm}; exported standalone because it is a pure function, and a
+ * caller should not have to build a client to reach it.
+ */
+export const toUrlForm = (body: Record<string, any>): URLSearchParams => {
   const params = new URLSearchParams()
   Object.keys(body).forEach(k => {
     if (body[k]) params.append(k, body[k])
@@ -133,7 +140,13 @@ const toUrlForm = (body: Record<string, any>): URLSearchParams => {
   return params
 }
 
-const toFormData = (body: Record<string, any>): FormData => {
+/**
+ * Object → `FormData`, flattening nested objects to dotted keys (`{ nested: { id: 5 } }` → `nested.id=5`).
+ * `File`, `Blob` and `Date` survive whole — `Date` as an ISO string — and `null`/`undefined` are skipped.
+ *
+ * Also reachable as {@link RestClient.toFormData}; standalone for the same reason as {@link toUrlForm}.
+ */
+export const toFormData = (body: Record<string, any>): FormData => {
   const formData = new FormData()
   const flattened = flatten(body, [File, Blob, Date])
   Object.entries(flattened).forEach(([key, value]) => {

@@ -94,6 +94,34 @@ export abstract class FetchClient {
 }
 
 /**
+ * The url of a `fetch` input, whichever of the three forms it arrived in. A `Request` stringifies to
+ * `'[object Request]'`, so it cannot simply be templated into a string.
+ *
+ * Also reachable as {@link FetchClient.toUrl}, so an interceptor needs no second import. Exported on its
+ * own because it is a pure function: a chain composed elsewhere — Angular DI multi-providers, say — still
+ * wants it, and should not have to build a throwaway client to reach it.
+ *
+ * @returns the absolute or relative url as written by the caller — not normalised
+ */
+export const toUrl = (input: RequestInfo | URL): string =>
+  (typeof input === 'string' && input) || (input instanceof URL && input.href) || (input as Request).url
+
+/**
+ * A copy of `init` carrying one more header. Copies rather than mutates: the `init` an interceptor
+ * receives belongs to the caller, and the same object may be reused across a retry.
+ *
+ * Also reachable as {@link FetchClient.withHeader}; standalone for the same reason as {@link toUrl}.
+ *
+ * @param init the incoming `RequestInit`, or `undefined` when the caller passed none
+ * @returns a new `RequestInit`; the original is untouched
+ */
+export const withHeader = (init: RequestInit | undefined, name: string, value: string): RequestInit => {
+  const headers = new Headers(init?.headers)
+  headers.set(name, value)
+  return { ...init, headers }
+}
+
+/**
  * Build a {@link FetchClient} over a base transport.
  *
  * @param base the transport the chain bottoms out in — an OAuth fetch, plain `fetch`, or a mock
@@ -115,11 +143,7 @@ export const createFetch = (base: typeof fetch = fetch): FetchClient => {
   return {
     fetch: doFetch,
     use: interceptor => void interceptors.push(interceptor),
-    toUrl: input => (typeof input === 'string' && input) || (input instanceof URL && input.href) || (input as Request).url,
-    withHeader: (init, name, value) => {
-      const headers = new Headers(init?.headers)
-      headers.set(name, value)
-      return { ...init, headers }
-    }
+    toUrl,
+    withHeader
   }
 }

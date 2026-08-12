@@ -45,6 +45,11 @@ Two helpers hang off the client so an interceptor needs no second import:
 - **`api.toUrl(input)`** gets the url whichever of the three forms it arrived in. A `Request` stringifies to
   `'[object Request]'`, so you cannot template it.
 
+Both are plain exports too — `import { toUrl, withHeader } from 'fetchbraid'`. Reach for those when the
+chain is composed somewhere other than `createFetch`: an Angular app wiring interceptors through DI
+multi-providers still wants the helpers, and shouldn't have to build a throwaway client to get at them.
+`toUrlForm` and `toFormData` are exported the same way.
+
 ### As a DI token
 
 `FetchClient` is an abstract class, not an interface, so it can double as a dependency-injection key.
@@ -145,6 +150,8 @@ query string included — not `response.url`, which a redirect would have rewrit
 | `createFetch(base?)` | a `FetchClient` over a transport; defaults to global `fetch` |
 | `rest(endpoint, doFetch?)` | a `RestClient` bound to one endpoint |
 | `RestError` | thrown on non-2xx; `status`, `statusText`, `url`, `body` |
+| `toUrl`, `withHeader` | the interceptor helpers, standalone as well as on the client |
+| `toUrlForm`, `toFormData` | the body helpers, standalone as well as on the client |
 | `flatten`, `isObject` | object helpers, exported because `toFormData` needs them |
 | `FetchClient`, `FetchInterceptor`, `RestClient`, `RequestOptions`, `HttpResponseType` | types |
 
