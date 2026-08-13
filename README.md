@@ -1,4 +1,4 @@
-# fetchbraid
+# fetch-braid
 
 A `fetch` interceptor chain and a small REST client, in ~250 lines with no dependencies.
 
@@ -8,7 +8,7 @@ A `fetch` interceptor chain and a small REST client, in ~250 lines with no depen
 No framework, no globals, no `window`. Runs unchanged in the browser, under SSR, and in a worker.
 
 ```sh
-npm i fetchbraid   # bun add fetchbraid
+npm i fetch-braid   # bun add fetch-braid
 ```
 
 ## createFetch
@@ -16,7 +16,7 @@ npm i fetchbraid   # bun add fetchbraid
 Every interceptor is a strand wrapped around the transport:
 
 ```ts
-import { createFetch } from 'fetchbraid'
+import { createFetch } from 'fetch-braid'
 
 const api = createFetch() // or createFetch(someOtherFetch)
 api.use(next => (input, init) => next(input, api.withHeader(init, 'authorization', token)))
@@ -45,7 +45,7 @@ Two helpers hang off the client so an interceptor needs no second import:
 - **`api.toUrl(input)`** gets the url whichever of the three forms it arrived in. A `Request` stringifies to
   `'[object Request]'`, so you cannot template it.
 
-Both are plain exports too — `import { toUrl, withHeader } from 'fetchbraid'`. Reach for those when the
+Both are plain exports too — `import { toUrl, withHeader } from 'fetch-braid'`. Reach for those when the
 chain is composed somewhere other than `createFetch`: an Angular app wiring interceptors through DI
 multi-providers still wants the helpers, and shouldn't have to build a throwaway client to get at them.
 `toUrlForm` and `toFormData` are exported the same way.
@@ -67,7 +67,7 @@ Not using DI? Ignore it — `createFetch()` returns a plain object.
 Hand it the braided transport, or nothing at all and it uses global `fetch`:
 
 ```ts
-import { rest } from 'fetchbraid'
+import { rest } from 'fetch-braid'
 
 const products = rest('https://api.example.com/products', api.fetch)
 
@@ -129,7 +129,7 @@ await feed.get('a1', { responseType: 'document' }) // the raw text, NOT a DOM
 A non-2xx rejects with a `RestError` — a real `Error`, and the only way to tell the failure cases apart:
 
 ```ts
-import { RestError } from 'fetchbraid'
+import { RestError } from 'fetch-braid'
 
 try {
   await orders.post(order)

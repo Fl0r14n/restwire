@@ -1,15 +1,15 @@
 {
-  "name": "fetchbraid",
+  "name": "fetch-braid",
   "version": "0.2.0",
   "description": "Fetch interceptor chain + tiny REST client. Zero deps, framework-agnostic, SSR-safe.",
   "license": "MIT",
   "author": "Florian Chi\u0219",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Fl0r14n/fetchbraid.git"
+    "url": "git+https://github.com/Fl0r14n/fetch-braid.git"
   },
-  "homepage": "https://github.com/Fl0r14n/fetchbraid#readme",
-  "bugs": "https://github.com/Fl0r14n/fetchbraid/issues",
+  "homepage": "https://github.com/Fl0r14n/fetch-braid#readme",
+  "bugs": "https://github.com/Fl0r14n/fetch-braid/issues",
   "keywords": [
     "fetch",
     "rest",
